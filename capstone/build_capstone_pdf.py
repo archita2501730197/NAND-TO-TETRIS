@@ -175,7 +175,9 @@ def build_pdf(output_path="Archita_2501730197_Capstone_Report.pdf"):
         [Paragraph("<b>Box Height</b>", table_cell_style), Paragraph("<b>20 screen rows</b> (Rows 97 through 116 inclusive)", table_cell_style)],
         [Paragraph("<b>Box Width Calculation</b>", table_cell_style), Paragraph("<b>97 mod 4 = 1</b> &rarr; 16 &times; ((1) + 1) = <b>32 pixels</b> (2 consecutive 16-bit words per row)", table_cell_style)],
         [Paragraph("<b>Screen Base Address</b>", table_cell_style), Paragraph("SCREEN + 32 &times; K = 16384 + (32 &times; 97) = <b>19488</b> (0x4C20)", table_cell_style)],
-        [Paragraph("<b>Interactive Behavior</b>", table_cell_style), Paragraph("Continuously senses keyboard (KBD = 24576). When any key is pressed, draws 32&times;20 black box (-1). When key is released, immediately erases box back to white (0).", table_cell_style)]
+        [Paragraph("<b>Interactive Behavior</b>", table_cell_style), Paragraph("Continuously senses keyboard (KBD = 24576). When any key is pressed, draws 32&times;20 black box (-1). When key is released, immediately erases box back to white (0).", table_cell_style)],
+        [Paragraph("<b>Live Deployment Link</b>", table_cell_style), Paragraph("<b>Vercel:</b> https://archita-capstone.vercel.app<br/><b>GitHub Pages:</b> https://archita2501730197.github.io/NAND-TO-TETRIS/", table_cell_style)],
+        [Paragraph("<b>GitHub Repository</b>", table_cell_style), Paragraph("https://github.com/archita2501730197/NAND-TO-TETRIS", table_cell_style)]
     ]
     k_table = Table(k_table_data, colWidths=[150, 354])
     k_table.setStyle(TableStyle([
