@@ -1,0 +1,36 @@
+# Symbol Table for Hack Assembly (K = 97)
+----------------------------------------
+SYMBOL NAME                  ADDRESS (DEC)  ADDRESS (HEX)
+----------------------------------------
+ARG                          2              0x0002
+DRAW_BLACK                   8              0x0008
+DRAW_WHITE                   4              0x0004
+KBD                          24576          0x6000
+LCL                          1              0x0001
+MAIN_LOOP                    0              0x0000
+R0                           0              0x0000
+R1                           1              0x0001
+R10                          10             0x000A
+R11                          11             0x000B
+R12                          12             0x000C
+R13                          13             0x000D
+R14                          14             0x000E
+R15                          15             0x000F
+R2                           2              0x0002
+R3                           3              0x0003
+R4                           4              0x0004
+R5                           5              0x0005
+R6                           6              0x0006
+R7                           7              0x0007
+R8                           8              0x0008
+R9                           9              0x0009
+RENDER                       10             0x000A
+ROW_LOOP                     18             0x0012
+SCREEN                       16384          0x4000
+SP                           0              0x0000
+THAT                         4              0x0004
+THIS                         3              0x0003
+col1Addr                     19             0x0013
+color                        16             0x0010
+rowAddr                      17             0x0011
+rowCount                     18             0x0012
