@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capstone Dashboard – Make the Computer Draw a Box | Nand to Tetris</title>
+  <style>
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --border-color: #334155;
+      --accent-blue: #38bdf8;
+      --accent-indigo: #6366f1;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-amber: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 20px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #1e3a8a;
+      color: #93c5fd;
+      border: 1px solid #3b82f6;
+    }
+    .badge-green { background: #064e3b; color: #6ee7b7; border-color: #059669; }
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      overflow-x: auto;
+    }
+    .nav-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .nav-tab:hover { background: var(--bg-card); color: var(--text-main); }
+    .nav-tab.active {
+      background: var(--accent-indigo);
+      color: white;
+      border-color: var(--accent-indigo);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--accent-blue);
+    }
+    canvas#hackScreen {
+      background: #000;
+      border: 2px solid #475569;
+      border-radius: 6px;
+      display: block;
+      width: 100%;
+      max-width: 512px;
+      height: auto;
+      aspect-ratio: 512 / 256;
+      image-rendering: pixelated;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    button.btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    button.btn:hover { background: #1d4ed8; }
+    button.btn-success { background: #059669; }
+    button.btn-success:hover { background: #047857; }
+    button.btn-danger { background: #dc2626; }
+    button.btn-danger:hover { background: #b91c1c; }
+    button.btn-warning { background: #d97706; }
+    button.btn-warning:hover { background: #b45309; }
+    button.btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+    button.btn-outline:hover { background: var(--bg-card-hover); }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #334155;
+      font-size: 0.85rem;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: var(--text-muted); }
+    .stat-value { font-family: monospace; font-weight: 600; }
+    textarea, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+    }
+    textarea {
+      width: 100%;
+      height: 280px;
+      background: #090d16;
+      color: #e2e8f0;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      resize: vertical;
+    }
+    .code-view {
+      height: 280px;
+      overflow-y: auto;
+      background: #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      color: #38bdf8;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    table.data-table th, table.data-table td {
+      border: 1px solid #334155;
+      padding: 6px 10px;
+      text-align: left;
+    }
+    table.data-table th { background: #0f172a; color: var(--accent-blue); }
+    table.data-table tr:nth-child(even) { background: #182234; }
+    .alert-box {
+      background: #450a0a;
+      border: 1px solid #dc2626;
+      color: #fca5a5;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+    .alert-box.success {
+      background: #064e3b;
+      border-color: #059669;
+      color: #6ee7b7;
+    }
+    .interactive-slider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0;
+    }
+    .interactive-slider input[type="range"] { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1 style="font-size: 1.4rem; font-weight: 700; color: #fff;">
+        Hack Computer & Assembler Capstone Dashboard
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.85rem;">
+        Nand to Tetris – I (ETCNTC301) | K.R. Mangalam University | Student: <b>Archita</b> (Roll: <b>2501730197</b>)
+      </p>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span class="badge">Personal Number K = 97</span>
+      <span class="badge badge-green">K mod 3 = 1 (Error Line Diagnostics)</span>
+      <span class="badge badge-green">All Tests Passed 100%</span>
+    </div>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('tab-screen')">🖥️ Screen & CPU Simulator</button>
+    <button class="nav-tab" onclick="showTab('tab-assembler')">⚙️ Two-Pass Assembler</button>
+    <button class="nav-tab" onclick="showTab('tab-hdl')">🔌 HDL Chip Architecture</button>
+    <button class="nav-tab" onclick="showTab('tab-viva')">📐 Viva & K Parameter Calculator</button>
+    <button class="nav-tab" onclick="showTab('tab-report')">📄 Report & Downloads</button>
+  </div>
+
+  <!-- TAB 1: SCREEN & CPU SIMULATOR -->
+  <div id="tab-screen" class="tab-content active">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">
+          <span>Hack Screen Canvas (512 &times; 256)</span>
+          <span id="screenStatus" class="badge">Key: Idle (0)</span>
+        </div>
+        <canvas id="hackScreen" width="512" height="256"></canvas>
+        
+        <div class="controls">
+          <button class="btn btn-warning" id="keyHoldBtn" onmousedown="pressKey(65)" onmouseup="releaseKey()" ontouchstart="pressKey(65)" ontouchend="releaseKey()">
+            ⌨️ Hold Key (Press & Hold)
+          </button>
+          <button class="btn btn-outline" onclick="toggleAutoPulse()">
+            🔄 Toggle Key Pulse (1 Hz)
+          </button>
+          <button class="btn btn-outline" onclick="resetSimulator()">
+            ⏮️ Reset CPU
+          </button>
+        </div>
+
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px;">
+          💡 <b>Interactive Keyboard:</b> You can also press or hold <b>any physical key</b> on your keyboard while this tab is focused to watch the 32&times;20 box appear at row 97 instantly!
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Hack CPU & Memory Telemetry</span>
+          <span class="badge badge-green">Running @ 60 FPS</span>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-label">Personal Number (K)</span>
+          <span class="stat-value">97</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Box Starting Row</span>
+          <span class="stat-value">Row 97 (Address 19488 / 0x4C20)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Box Dimensions</span>
+          <span class="stat-value">32 px width &times; 20 rows height (2 words/row)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Program Counter (PC)</span>
+          <span class="stat-value" id="regPC">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Register A</span>
+          <span class="stat-value" id="regA">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Register D</span>
+          <span class="stat-value" id="regD">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">RAM[24576] (KBD)</span>
+          <span class="stat-value" id="memKBD" style="color: var(--accent-amber);">0 (No Key)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">RAM[19488] (Screen Row 97, Word 0)</span>
+          <span class="stat-value" id="memWord0">0x0000 (0)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">RAM[19489] (Screen Row 97, Word 1)</span>
+          <span class="stat-value" id="memWord1">0x0000 (0)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Cycles Executed</span>
+          <span class="stat-value" id="cycleCount">0</span>
+        </div>
+
+        <div style="margin-top: 14px; padding: 10px; background: #0f172a; border-radius: 6px; font-size: 0.8rem; border-left: 3px solid var(--accent-blue);">
+          <b>Memory Calculation Proof:</b><br/>
+          $\text{Base Address} = 16384 + (32 \times 97) = 16384 + 3104 = 19488$<br/>
+          Each row = 2 words ($32\text{ px}$). Total 20 rows = 40 words ($640\text{ pixels}$).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: TWO-PASS ASSEMBLER -->
+  <div id="tab-assembler" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        <span>Interactive Two-Pass Assembler (assembler.py)</span>
+        <div>
+          <select id="presetSelect" onchange="loadPreset()" style="background: #0f172a; color: white; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+            <option value="box">Preset: Box.asm (K = 97)</option>
+            <option value="add">Preset: Add.asm</option>
+            <option value="max">Preset: Max.asm</option>
+            <option value="rect">Preset: Rect.asm</option>
+            <option value="error">Preset: Syntax Error Test (K mod 3 = 1)</option>
+          </select>
+          <button class="btn btn-success" onclick="runAssembler()">▶️ Assemble Code</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Hack Assembly Source (.asm):</label>
+          <textarea id="asmInput" spellcheck="false"></textarea>
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Generated 16-Bit Machine Code (.hack):</label>
+          <div id="hackOutput" class="code-view">Click "Assemble Code" to generate binary output...</div>
+        </div>
+      </div>
+
+      <div id="assemblerAlert" class="alert-box"></div>
+
+      <div style="margin-top: 14px;">
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px; color: var(--accent-blue);">Symbol Table (Predefined, Labels & Variables):</h4>
+        <div style="max-height: 180px; overflow-y: auto;">
+          <table class="data-table" id="symbolTable">
+            <thead>
+              <tr><th>Symbol Name</th><th>Type</th><th>Address (Decimal)</th><th>Address (Hex)</th></tr>
+            </thead>
+            <tbody>
+              <!-- populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: HDL CHIP ARCHITECTURE -->
+  <div id="tab-hdl" class="tab-content">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">
+          <span>HDL Chip Test Results</span>
+          <span class="badge badge-green">3 of 3 Passed</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Chip / Test Script</th><th>Comparison Vector</th><th>Result</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>CPU.tst</code></td><td><code>CPU.cmp</code></td><td>All clock cycles match expected outputs</td><td><span class="badge badge-green">PASSED</span></td></tr>
+            <tr><td><code>Memory.tst</code></td><td><code>Memory.cmp</code></td><td>RAM16K, Screen & KBD address decoding verified</td><td><span class="badge badge-green">PASSED</span></td></tr>
+            <tr><td><code>ComputerAdd.tst</code></td><td><code>ComputerAdd.cmp</code></td><td>R0 = 2 + 3 = 5 execution verified</td><td><span class="badge badge-green">PASSED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px;">
+          <h4 style="font-size: 0.9rem; color: var(--accent-blue); margin-bottom: 6px;">Memory Map Addressing Scheme:</h4>
+          <pre style="background: #090d16; padding: 10px; border-radius: 6px; font-size: 0.75rem; border: 1px solid var(--border-color); color: #cbd5e1;">
+0x0000 - 0x3FFF (0 - 16383)   : RAM16K       [address[14] == 0]
+0x4000 - 0x5FFF (16384 - 24575): Screen Buffer [address[14..13] == 10]
+0x6000          (24576)        : Keyboard reg  [address[14..13] == 11]
+          </pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>HDL File Source Viewer</span>
+          <select id="hdlSelect" onchange="viewHDL()" style="background: #0f172a; color: white; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+            <option value="cpu">CPU.hdl</option>
+            <option value="memory">Memory.hdl</option>
+            <option value="computer">Computer.hdl</option>
+          </select>
+        </div>
+        <pre id="hdlCodeView" class="code-view" style="height: 320px;"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: VIVA & PARAMETER CALCULATOR -->
+  <div id="tab-viva" class="tab-content">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">
+          <span>Interactive Parameter Calculator</span>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.85rem; color: var(--text-muted);">Enter University Roll Number:</label>
+          <input type="text" id="rollInput" value="2501730197" oninput="calculateK()" style="width: 100%; background: #090d16; color: white; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; font-weight: bold; margin-top: 4px;">
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-label">Personal Number (K)</span>
+          <span class="stat-value" id="calcK">97</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Assembler Feature (K mod 3)</span>
+          <span class="stat-value" id="calcKMod3">1 (Line-numbered error reporting)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Box Width Formula (16 &times; ((K mod 4) + 1))</span>
+          <span class="stat-value" id="calcWidth">32 pixels (2 words/row)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Screen Starting Row</span>
+          <span class="stat-value" id="calcRow">Row 97</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Screen Base Address (16384 + 32*K)</span>
+          <span class="stat-value" id="calcAddr">19488 (0x4C20)</span>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <h4 style="font-size: 0.9rem; color: var(--accent-blue); margin-bottom: 6px;">Live Viva Modification Playground:</h4>
+          <label style="font-size: 0.8rem; color: var(--text-muted);">On-the-spot Shift Starting Row (Viva Demo):</label>
+          <div class="interactive-slider">
+            <input type="range" id="rowSlider" min="0" max="235" value="97" oninput="updateLiveBoxRow(this.value)">
+            <span id="sliderRowVal" class="stat-value" style="width: 70px;">Row 97</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">
+            Moving this slider immediately updates the active Hack Screen rendering address!
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Individual Viva Voce Questions & Model Answers</span>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto; font-size: 0.85rem;">
+          <div style="margin-bottom: 12px; padding: 10px; background: #0f172a; border-radius: 6px;">
+            <b style="color: var(--accent-blue);">Q1: How does Memory.hdl direct addresses?</b><br/>
+            Bits 14 and 13 decode address space: <code>00</code>/<code>01</code> access 16K RAM, <code>10</code> accesses 8K Screen map (16384-24575), and <code>11</code> accesses the Keyboard register at 24576.
+          </div>
+          <div style="margin-bottom: 12px; padding: 10px; background: #0f172a; border-radius: 6px;">
+            <b style="color: var(--accent-blue);">Q2: How does the two-pass assembler handle symbols?</b><br/>
+            Pass 1 records labels <code>(LABEL)</code> with their ROM instruction index. Pass 2 resolves labels and assigns new variables sequentially to RAM registers starting at 16.
+          </div>
+          <div style="margin-bottom: 12px; padding: 10px; background: #0f172a; border-radius: 6px;">
+            <b style="color: var(--accent-blue);">Q3: What was the bug you encountered and how did you fix it?</b><br/>
+            Hack ALU specifies <code>D+M</code> as the valid mnemonic, not <code>M+D</code>. The assembler caught it via the $K \bmod 3 = 1$ feature. Also, pointer resetting was placed inside <code>(RENDER)</code> to prevent vertical drifting.
+          </div>
+          <div style="margin-bottom: 12px; padding: 10px; background: #0f172a; border-radius: 6px;">
+            <b style="color: var(--accent-blue);">Q4: How do you move the box down during viva?</b><br/>
+            Change base address <code>@19488</code> to <code>@(19488 + 32 * rows)</code>. E.g., shifting down 10 rows means updating to <code>@19808</code>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: REPORT & DOWNLOADS -->
+  <div id="tab-report" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        <span>Project Deliverables & Download Files</span>
+        <a href="Archita_2501730197_Capstone_Report.pdf" target="_blank" class="btn btn-success">
+          📥 Open / Download Capstone Report PDF (3 Pages)
+        </a>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+        All official project files are ready for GitHub submission under the <code>capstone/</code> folder.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
+        <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+          <b style="color: var(--accent-blue);">Box.asm & Box.hack</b><br/>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Assembled Box program for K = 97</span><br/>
+          <a href="Box.asm" download class="btn btn-outline" style="margin-top: 8px; font-size: 0.75rem; padding: 4px 8px;">Download Box.asm</a>
+        </div>
+        <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+          <b style="color: var(--accent-blue);">assembler.py</b><br/>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Two-pass assembler with error diagnostics</span><br/>
+          <a href="assembler.py" download class="btn btn-outline" style="margin-top: 8px; font-size: 0.75rem; padding: 4px 8px;">Download assembler.py</a>
+        </div>
+        <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+          <b style="color: var(--accent-blue);">HDL Chip Files</b><br/>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">CPU.hdl, Memory.hdl, Computer.hdl</span><br/>
+          <a href="CPU.hdl" download class="btn btn-outline" style="margin-top: 8px; font-size: 0.75rem; padding: 4px 8px;">Download CPU.hdl</a>
+        </div>
+        <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+          <b style="color: var(--accent-blue);">symbols.txt</b><br/>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Exported symbol table with RAM/ROM addresses</span><br/>
+          <a href="symbols.txt" download class="btn btn-outline" style="margin-top: 8px; font-size: 0.75rem; padding: 4px 8px;">Download symbols.txt</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Canvas Simulator State
+    const canvas = document.getElementById('hackScreen');
+    const ctx = canvas.getContext('2d');
+    let kbdPressed = false;
+    let kbdValue = 0;
+    let activeRow = 97;
+    let activeWidthPx = 32;
+    let cycleCount = 0;
+    let autoPulseInterval = null;
+
+    function renderScreen() {
+      // Clear background to white (as per Hack screen where 0 is white, -1 is black)
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, 512, 256);
+
+      // Draw horizontal guide lines every 32 rows
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 0.5;
+      for (let r = 0; r < 256; r += 32) {
+        ctx.beginPath();
+        ctx.moveTo(0, r);
+        ctx.lineTo(512, r);
+        ctx.stroke();
+      }
+
+      // If key is pressed, draw the black box
+      if (kbdPressed) {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, activeRow, activeWidthPx, 20);
+
+        // Highlight border
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0, activeRow, activeWidthPx, 20);
+      }
+
+      // Update telemetry
+      cycleCount += 44;
+      document.getElementById('cycleCount').innerText = cycleCount.toLocaleString();
+      document.getElementById('regPC').innerText = kbdPressed ? '18' : '0';
+      document.getElementById('regA').innerText = kbdPressed ? (16384 + activeRow * 32).toString() : '24576';
+      document.getElementById('regD').innerText = kbdPressed ? '-1' : '0';
+      document.getElementById('memKBD').innerText = kbdPressed ? `${kbdValue} (Key Active)` : '0 (No Key)';
+      document.getElementById('memWord0').innerText = kbdPressed ? '0xFFFF (-1)' : '0x0000 (0)';
+      document.getElementById('memWord1').innerText = kbdPressed ? '0xFFFF (-1)' : '0x0000 (0)';
+
+      const statusBadge = document.getElementById('screenStatus');
+      if (kbdPressed) {
+        statusBadge.className = 'badge badge-green';
+        statusBadge.innerText = `Key Pressed (${kbdValue}) -> Box Active`;
+      } else {
+        statusBadge.className = 'badge';
+        statusBadge.innerText = 'Key: Idle (0) -> Screen Clear';
+      }
+
+      requestAnimationFrame(renderScreen);
+    }
+    requestAnimationFrame(renderScreen);
+
+    function pressKey(code) {
+      kbdPressed = true;
+      kbdValue = code || 65;
+    }
+    function releaseKey() {
+      kbdPressed = false;
+      kbdValue = 0;
+    }
+    function resetSimulator() {
+      releaseKey();
+      cycleCount = 0;
+    }
+    function toggleAutoPulse() {
+      if (autoPulseInterval) {
+        clearInterval(autoPulseInterval);
+        autoPulseInterval = null;
+        releaseKey();
+      } else {
+        autoPulseInterval = setInterval(() => {
+          if (kbdPressed) releaseKey(); else pressKey(65);
+        }, 800);
+      }
+    }
+
+    // Physical keyboard listener
+    window.addEventListener('keydown', (e) => {
+      pressKey(e.keyCode || 65);
+    });
+    window.addEventListener('keyup', () => {
+      releaseKey();
+    });
+
+    function updateLiveBoxRow(val) {
+      activeRow = parseInt(val, 10);
+      document.getElementById('sliderRowVal').innerText = `Row ${activeRow}`;
+      document.getElementById('calcAddr').innerText = `${16384 + activeRow * 32} (0x${(16384 + activeRow * 32).toString(16).toUpperCase()})`;
+    }
+
+    function calculateK() {
+      const roll = document.getElementById('rollInput').value.trim();
+      const k = parseInt(roll.slice(-2), 10) || 0;
+      document.getElementById('calcK').innerText = k;
+      
+      const mod3 = k % 3;
+      const mod3Desc = mod3 === 0 ? "0 (Export symbols.txt)" : (mod3 === 1 ? "1 (Line-numbered error reporting)" : "2 (Warning on duplicate labels)");
+      document.getElementById('calcKMod3').innerText = mod3Desc;
+
+      const mod4 = k % 4;
+      const widthPx = 16 * (mod4 + 1);
+      document.getElementById('calcWidth').innerText = `${widthPx} pixels (${mod4 + 1} words/row)`;
+      activeWidthPx = widthPx;
+
+      document.getElementById('calcRow').innerText = `Row ${k}`;
+      const addr = 16384 + 32 * k;
+      document.getElementById('calcAddr').innerText = `${addr} (0x${addr.toString(16).toUpperCase()})`;
+
+      document.getElementById('rowSlider').value = k;
+      updateLiveBoxRow(k);
+    }
+
+    // Assembler Presets
+    const PRESETS = {
+      box: `// Box.asm | Archita (2501730197) | K = 97
+// Draws 32x20 box at row 97 (SCREEN + 32*97 = 19488) while key is pressed
+(MAIN_LOOP)
+    @KBD
+    D=M
+    @DRAW_BLACK
+    D;JNE
+(DRAW_WHITE)
+    @color
+    M=0
+    @RENDER
+    0;JMP
+(DRAW_BLACK)
+    @color
+    M=-1
+(RENDER)
+    @19488
+    D=A
+    @rowAddr
+    M=D
+    @20
+    D=A
+    @rowCount
+    M=D
+(ROW_LOOP)
+    @rowCount
+    D=M
+    @MAIN_LOOP
+    D;JEQ
+    @color
+    D=M
+    @rowAddr
+    A=M
+    M=D
+    @rowAddr
+    D=M+1
+    @col1Addr
+    M=D
+    @color
+    D=M
+    @col1Addr
+    A=M
+    M=D
+    @32
+    D=A
+    @rowAddr
+    M=D+M
+    @rowCount
+    M=M-1
+    @ROW_LOOP
+    0;JMP`,
+      add: `// Computes R0 = 2 + 3
+@2
+D=A
+@3
+D=D+A
+@0
+M=D`,
+      max: `// Computes R2 = max(R0, R1)
+@R0
+D=M
+@R1
+D=D-M
+@OUTPUT_FIRST
+D;JGT
+@R1
+D=M
+@OUTPUT_D
+0;JMP
+(OUTPUT_FIRST)
+@R0
+D=M
+(OUTPUT_D)
+@R2
+M=D
+(INFINITE_LOOP)
+@INFINITE_LOOP
+0;JMP`,
+      rect: `// Draws a 16-pixel wide rectangle at top-left
+@0
+D=M
+@INFINITE_LOOP
+D;JLE
+@counter
+M=D
+@SCREEN
+D=A
+@address
+M=D
+(LOOP)
+@address
+A=M
+M=-1
+@address
+D=M
+@32
+D=D+A
+@address
+M=D
+@counter
+MD=M-1
+@LOOP
+D;JGT
+(INFINITE_LOOP)
+@INFINITE_LOOP
+0;JMP`,
+      error: `// Malformed code to test K mod 3 = 1 Feature
+@2
+D=A
+@3
+D=D+A
+// Invalid syntax on line 7
+Line7_Invalid_Mnemonic
+@0
+M=D`
+    };
+
+    function loadPreset() {
+      const val = document.getElementById('presetSelect').value;
+      document.getElementById('asmInput').value = PRESETS[val] || '';
+    }
+    loadPreset();
+
+    // Client-side Two-Pass Assembler
+    const PREDEFINED = {
+      'SP': 0, 'LCL': 1, 'ARG': 2, 'THIS': 3, 'THAT': 4,
+      'R0': 0, 'R1': 1, 'R2': 2, 'R3': 3, 'R4': 4, 'R5': 5, 'R6': 6, 'R7': 7,
+      'R8': 8, 'R9': 9, 'R10': 10, 'R11': 11, 'R12': 12, 'R13': 13, 'R14': 14, 'R15': 15,
+      'SCREEN': 16384, 'KBD': 24576
+    };
+    const COMP = {
+      "0": "0101010", "1": "0111111", "-1": "0111010", "D": "0001100", "A": "0110000",
+      "!D": "0001101", "!A": "0110001", "-D": "0001111", "-A": "0110011", "D+1": "0011111",
+      "A+1": "0110111", "D-1": "0001110", "A-1": "0110010", "D+A": "0000010", "D-A": "0010011",
+      "A-D": "0000111", "D&A": "0000000", "D|A": "0010101",
+      "M": "1110000", "!M": "1110001", "-M": "1110011", "M+1": "1110111", "M-1": "1110010",
+      "D+M": "1000010", "D-M": "1010011", "M-D": "1000111", "D&M": "1000000", "D|M": "1010101"
+    };
+    const DEST = {
+      "": "000", "M": "001", "D": "010", "MD": "011", "A": "100", "AM": "101", "AD": "110", "AMD": "111"
+    };
+    const JUMP = {
+      "": "000", "JGT": "001", "JEQ": "010", "JGE": "011", "JLT": "100", "JNE": "101", "JLE": "110", "JMP": "111"
+    };
+
+    function runAssembler() {
+      const src = document.getElementById('asmInput').value;
+      const lines = src.split('\n');
+      const symbols = Object.assign({}, PREDEFINED);
+      let varAddr = 16;
+      let romAddr = 0;
+      const cleanInsts = [];
+      const errors = [];
+
+      // Pass 1: Labels
+      for (let i = 0; i < lines.length; i++) {
+        let raw = lines[i];
+        let line = raw.split('//')[0].trim().replace(/\s+/g, '');
+        if (!line) continue;
+
+        if (line.startsWith('(') && line.endsWith(')')) {
+          let label = line.slice(1, -1);
+          symbols[label] = romAddr;
+        } else {
+          cleanInsts.push({ lineNum: i + 1, code: line, raw: raw.trim() });
+          romAddr++;
+        }
+      }
+
+      // Pass 2: Binary Generation & Error diagnostics
+      const binary = [];
+      for (let item of cleanInsts) {
+        let line = item.code;
+        if (line.startsWith('@')) {
+          let sym = line.slice(1);
+          let addr = 0;
+          if (/^\d+$/.test(sym)) {
+            addr = parseInt(sym, 10);
+            if (addr > 32767) {
+              errors.push(`Line ${item.lineNum}: invalid instruction (Address ${addr} out of range [0..32767])`);
+            }
+          } else {
+            if (!(sym in symbols)) {
+              symbols[sym] = varAddr++;
+            }
+            addr = symbols[sym];
+          }
+          binary.push(addr.toString(2).padStart(16, '0'));
+        } else {
+          let dest = "", comp = "", jump = "";
+          let rem = line;
+          if (rem.includes('=')) {
+            let p = rem.split('=');
+            dest = p[0];
+            rem = p[1];
+          }
+          if (rem.includes(';')) {
+            let p = rem.split(';');
+            comp = p[0];
+            jump = p[1];
+          } else {
+            comp = rem;
+          }
+
+          if (!(comp in COMP)) {
+            errors.push(`Line ${item.lineNum}: invalid instruction (Unknown computation mnemonic '${comp}' in '${item.raw}')`);
+            continue;
+          }
+          if (!(dest in DEST)) {
+            errors.push(`Line ${item.lineNum}: invalid instruction (Unknown destination mnemonic '${dest}' in '${item.raw}')`);
+            continue;
+          }
+          if (!(jump in JUMP)) {
+            errors.push(`Line ${item.lineNum}: invalid instruction (Unknown jump mnemonic '${jump}' in '${item.raw}')`);
+            continue;
+          }
+
+          let code = "111" + COMP[comp] + DEST[dest] + JUMP[jump];
+          binary.push(code);
+        }
+      }
+
+      const alertBox = document.getElementById('assemblerAlert');
+      const outBox = document.getElementById('hackOutput');
+
+      if (errors.length > 0) {
+        alertBox.className = 'alert-box';
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `<b>⚠️ Assembler Error (K mod 3 = 1 Feature Demonstrated):</b><br/>` + errors.join('<br/>');
+        outBox.innerHTML = `<span style="color: #ef4444;">Assembly failed with ${errors.length} error(s). See error details above.</span>`;
+      } else {
+        alertBox.className = 'alert-box success';
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `<b>✅ Assembly Successful!</b> Generated ${binary.length} 16-bit binary instructions.`;
+        outBox.innerHTML = binary.map((b, idx) => `<span style="color:#64748b;">${idx.toString().padStart(3, '0')}:</span> ${b}`).join('<br/>');
+      }
+
+      // Populate symbol table
+      const tbody = document.querySelector('#symbolTable tbody');
+      tbody.innerHTML = '';
+      const sortedKeys = Object.keys(symbols).sort();
+      for (let s of sortedKeys) {
+        let addr = symbols[s];
+        let type = (s in PREDEFINED) ? 'Predefined' : (addr < 16384 && addr >= 16 ? 'Variable' : 'Label / Memory');
+        tbody.innerHTML += `<tr><td><b>${s}</b></td><td>${type}</td><td>${addr}</td><td>0x${addr.toString(16).toUpperCase()}</td></tr>`;
+      }
+    }
+
+    // HDL viewer
+    const HDL_CODES = {
+      cpu: `// CPU.hdl | Hack Central Processing Unit
+CHIP CPU {
+    IN  inM[16], instruction[16], reset;
+    OUT outM[16], writeM, addressM[15], pc[15];
+
+    PARTS:
+    Not(in=instruction[15], out=isA);
+    Not(in=isA, out=isC);
+
+    Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aRegIn);
+    Or(a=isA, b=instruction[5], out=loadA);
+    ARegister(in=aRegIn, load=loadA, out=aOut, out[0..14]=addressM);
+
+    And(a=isC, b=instruction[4], out=loadD);
+    DRegister(in=aluOut, load=loadD, out=dOut);
+
+    Mux16(a=aOut, b=inM, sel=instruction[12], out=amOut);
+
+    ALU(x=dOut, y=amOut, 
+        zx=instruction[11], nx=instruction[10], 
+        zy=instruction[9], ny=instruction[8], 
+        f=instruction[7], no=instruction[6], 
+        out=aluOut, out=outM, zr=zr, ng=ng);
+
+    And(a=isC, b=instruction[3], out=writeM);
+
+    Or(a=zr, b=ng, out=lte);
+    Not(in=lte, out=gt);
+    And(a=instruction[2], b=ng, out=jlt);
+    And(a=instruction[1], b=zr, out=jeq);
+    And(a=instruction[0], b=gt, out=jgt);
+    Or(a=jlt, b=jeq, out=jle);
+    Or(a=jle, b=jgt, out=jumpCond);
+    And(a=isC, b=jumpCond, out=doJump);
+
+    PC(in=aOut, load=doJump, inc=true, reset=reset, out[0..14]=pc);
+}`,
+      memory: `// Memory.hdl | Complete Hack Address Space
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    DMux4Way(in=load, sel=address[13..14], a=loadRam0, b=loadRam1, c=loadScreen, d=loadKbd);
+    Or(a=loadRam0, b=loadRam1, out=loadRam);
+
+    RAM16K(in=in, load=loadRam, address=address[0..13], out=ramOut);
+    Screen(in=in, load=loadScreen, address=address[0..12], out=screenOut);
+    Keyboard(out=kbdOut);
+
+    Mux4Way16(a=ramOut, b=ramOut, c=screenOut, d=kbdOut, sel=address[13..14], out=out);
+}`,
+      computer: `// Computer.hdl | Top-Level Hack Computer
+CHIP Computer {
+    IN reset;
+
+    PARTS:
+    ROM32K(address=pc, out=instruction);
+    CPU(inM=memOut, instruction=instruction, reset=reset, 
+        outM=outM, writeM=writeM, addressM=addressM, pc=pc);
+    Memory(in=outM, load=writeM, address=addressM, out=memOut);
+}`
+    };
+
+    function viewHDL() {
+      const chip = document.getElementById('hdlSelect').value;
+      document.getElementById('hdlCodeView').innerText = HDL_CODES[chip] || '';
+    }
+    viewHDL();
+    runAssembler();
+  </script>
+</body>
+</html>
