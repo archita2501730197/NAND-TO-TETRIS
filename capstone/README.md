@@ -4,6 +4,13 @@
 
 ---
 
+### 🌐 Live Deployment & Project Links
+- 🚀 **Live Interactive Dashboard (Vercel):** [https://archita-capstone.vercel.app](https://archita-capstone.vercel.app)
+- 🌐 **Live Interactive Dashboard (GitHub Pages):** [https://archita2501730197.github.io/NAND-TO-TETRIS/](https://archita2501730197.github.io/NAND-TO-TETRIS/)
+- 📦 **GitHub Repository:** [https://github.com/archita2501730197/NAND-TO-TETRIS](https://github.com/archita2501730197/NAND-TO-TETRIS)
+
+---
+
 ### Student Information
 - **Name:** Archita
 - **Roll Number:** 2501730197

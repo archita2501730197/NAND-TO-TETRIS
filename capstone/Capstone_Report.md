@@ -25,6 +25,8 @@
 | **Words per Row** | $(K \pmod 4) + 1 = 1 + 1 = \mathbf{2\text{ 16-bit words per row}}$ |
 | **Screen Memory Base Address** | $\text{SCREEN} + 32 \times K = 16384 + (32 \times 97) = 16384 + 3104 = \mathbf{19488}\ (0\text{x}4C20)$ |
 | **Interactive Key Control** | Memory-mapped I/O at `KBD` ($24576 / 0\text{x}6000$).<br>Key Pressed ($\text{M} \neq 0$): draw black ($-1 / 0\text{xFFFF}$).<br>Key Released ($\text{M} = 0$): erase to background ($0 / 0\text{x}0000$). |
+| **Live Deployed Dashboard** | 🚀 **Vercel:** [https://archita-capstone.vercel.app](https://archita-capstone.vercel.app)<br>🌐 **GitHub Pages:** [https://archita2501730197.github.io/NAND-TO-TETRIS/](https://archita2501730197.github.io/NAND-TO-TETRIS/) |
+| **GitHub Repository** | 📦 [https://github.com/archita2501730197/NAND-TO-TETRIS](https://github.com/archita2501730197/NAND-TO-TETRIS) |
 
 ---
 
