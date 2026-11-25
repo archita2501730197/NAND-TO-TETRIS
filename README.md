@@ -5,8 +5,8 @@
 ---
 
 ### 🌐 Live Deployment & Project Links
-- 🚀 **Live Interactive Dashboard (Vercel):** [https://archita-capstone.vercel.app](https://archita-capstone.vercel.app)
-- 🌐 **Live Interactive Dashboard (GitHub Pages):** [https://archita2501730197.github.io/NAND-TO-TETRIS/](https://archita2501730197.github.io/NAND-TO-TETRIS/)
+- 🌐 **Live Website link (GitHub Pages):** [click here for website dashboard](https://archita2501730197.github.io/NAND-TO-TETRIS/)
+- 🌐 **Google drive video link:** [click here for video](https://drive.google.com/file/d/1Vw3Qrquo8MTtVplTnmwJY6SQbFluysZz/view?usp=sharing)
 - 📦 **GitHub Repository:** [https://github.com/archita2501730197/NAND-TO-TETRIS](https://github.com/archita2501730197/NAND-TO-TETRIS)
 
 ---
